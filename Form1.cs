@@ -133,6 +133,7 @@ namespace Chess
             if (p[0] == np[0] && p[1] == np[1]) timer1.Enabled = false;
             p[0] = np[0]; p[1] = np[1];
             Click_label(Lb[p[0] * n + p[1]], new EventArgs());
+
         }
     }
 }
