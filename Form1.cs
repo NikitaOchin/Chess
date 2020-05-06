@@ -13,16 +13,17 @@ namespace Chess
 {
     public partial class Form1 : Form
     {
-        int n;
-        Control[] Lb;
-        Color[] main_color;
-        int[] A;
-        int[] p, np, lp;
+        int n; //Count of cell. (Desk n х n)
+        Control[] Lb; //Array of cell
+        Color[] main_color; //Colors for cover the desk
+        int[] A; //Array to describe the knight's steps
+        int[] p, np, lp; // Current, next and previous point of the knight's location
+        int index = 0;//For count of the knight's steps
 
         public Form1()
         {
             InitializeComponent();
-            n = 10;
+            n = 8;
             Lb = new Label[n * n];
             main_color = new Color[2] { Color.White, Color.Black };
             A = new int[4] { -2, 2, -1, 1 };
@@ -48,9 +49,10 @@ namespace Chess
                     Lb[i * n + j].BackColor = main_color[(i + j) % 2];
                     Lb[i * n + j].Location = new Point(i * lb_size + i, j * lb_size + j);
                     Lb[i * n + j].Text = 0.ToString();
+                    Lb[i * n + j].ForeColor = main_color[(i + j + 1) % 2];
                 }
 
-            //Подсчёт кол-ва возможных ходов конем для каждой клетки
+            //It counts the number of possible horse moves for each cell
             for (int i = 0; i < n; i++)
                 for (int j = 0; j < n; j++)
                     for (int k = 0; k < 2; k++)
@@ -69,12 +71,14 @@ namespace Chess
             if (p[0] == -1 && p[1] == -1)
             { timer1.Enabled = false; return; }
 
-            //Закрашивает предыдущее место коня красным цветом. Новое место заполняет картинкой коня
+            //It covers previous place with red color. New place cover picture of knight 
             Lb[lp[0] * n + lp[1]].BackgroundImage = null;
             Lb[lp[0] * n + lp[1]].BackColor = Color.Red;
+            Lb[lp[0] * n + lp[1]].Text = index++.ToString();
+            Lb[lp[0] * n + lp[1]].ForeColor = Color.Black;
             Lb[p[0] * n + p[1]].BackgroundImage = imageList1.Images[0];
 
-            //Отнимает у клеток на кот-ые возможен следущий ход по одному возможному ходу
+            //It takes away one move options from cell which is available for step
             for (int i = 0; i < 2; i++)
                 for (int j = 2; j < 4; j++)
                 {
@@ -90,7 +94,7 @@ namespace Chess
                     }
                 }
 
-            //Находит клетку для следующего хода - это клетка с минимальным кол-вом вариантов ходов на неё
+            //Find cell for next step - it has minimum move options.
             int min = 100;
             np[0] = -1; np[1] = -1;
             for (int i = 0; i < 2; i++)
