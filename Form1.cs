@@ -15,19 +15,24 @@ namespace Chess
     {
         int n; //Count of cell. (Desk n х n)
         Control[] Lb; //Array of cell
+        int[] Lb_step;
         Color[] main_color; //Colors for cover the desk
         int[] A; //Array to describe the knight's steps
         int[] p, np, lp; // Current, next and previous point of the knight's location
         int index = 0;//For count of the knight's steps
 
-        public Form1()
+        public Form1() : this(8, new int[2] { 0, 0 }) { }
+        public Form1(int N) : this(N, new int[2] { 0, 0 }) { }
+        public Form1(int[] P) : this(8, P) { }
+        public Form1(int N, int[] P)
         {
             InitializeComponent();
-            n = 8;
-            Lb = new Label[n * n];
+            n = N;
+            p = new int[2] { P[0], P[1] };
+            Lb = new Label[n * n]; 
+            Lb_step = new int[n * n];
             main_color = new Color[2] { Color.White, Color.Black };
             A = new int[4] { -2, 2, -1, 1 };
-            p = new int[2] { 0, 0 };
             np = new int[2] { -1, -1 };
             lp = new int[2] { p[0], p[1] };
 
@@ -48,7 +53,7 @@ namespace Chess
                     Lb[i * n + j].Size = new Size(lb_size, lb_size);
                     Lb[i * n + j].BackColor = main_color[(i + j) % 2];
                     Lb[i * n + j].Location = new Point(i * lb_size + i, j * lb_size + j);
-                    Lb[i * n + j].Text = 0.ToString();
+                    Lb_step[i * n + j] = 0;
                     Lb[i * n + j].ForeColor = main_color[(i + j + 1) % 2];
                 }
 
@@ -59,9 +64,9 @@ namespace Chess
                         for (int m = 2; m < 4; m++)
                         {
                             if (i + A[k] >= 0 && j + A[m] >= 0 && i + A[k] < n && j + A[m] < n)
-                                Lb[i * n + j].Text = (Convert.ToInt32(Lb[i * n + j].Text) + 1).ToString();
+                                Lb_step[i * n + j]++;
                             if (i + A[m] >= 0 && j + A[k] >= 0 && i + A[m] < n && j + A[k] < n)
-                                Lb[i * n + j].Text = (Convert.ToInt32(Lb[i * n + j].Text) + 1).ToString();
+                                Lb_step[i * n + j]++;
                         }
 
         }
@@ -82,16 +87,10 @@ namespace Chess
             for (int i = 0; i < 2; i++)
                 for (int j = 2; j < 4; j++)
                 {
-                    if (p[0] + A[i] >= 0 && p[1] + A[j] >= 0 && p[0] + A[i] < n && p[1] + A[j] < n
-                        && main_color.Contains(Lb[(p[0] + A[i]) * n + (p[1] + A[j])].BackColor))
-                    {
-                        Lb[(p[0] + A[i]) * n + (p[1] + A[j])].Text = (Convert.ToInt32(Lb[(p[0] + A[i]) * n + (p[1] + A[j])].Text) - 1).ToString();
-                    }
-                    if (p[0] + A[j] >= 0 && p[1] + A[i] >= 0 && p[0] + A[j] < n && p[1] + A[i] < n
-                        && main_color.Contains(Lb[(p[0] + A[j]) * n + (p[1] + A[i])].BackColor))
-                    {
-                        Lb[(p[0] + A[j]) * n + (p[1] + A[i])].Text = (Convert.ToInt32(Lb[(p[0] + A[j]) * n + (p[1] + A[i])].Text) - 1).ToString();
-                    }
+                    if (p[0] + A[i] >= 0 && p[1] + A[j] >= 0 && p[0] + A[i] < n && p[1] + A[j] < n)
+                        Lb_step[(p[0] + A[i]) * n + (p[1] + A[j])]--;
+                    if (p[0] + A[j] >= 0 && p[1] + A[i] >= 0 && p[0] + A[j] < n && p[1] + A[i] < n)
+                        Lb_step[(p[0] + A[j]) * n + (p[1] + A[i])]--;
                 }
 
             //Find cell for next step - it has minimum move options.
@@ -101,14 +100,18 @@ namespace Chess
                 for (int j = 2; j < 4; j++)
                 {
                     if (p[0] + A[i] >= 0 && p[1] + A[j] >= 0 && p[0] + A[i] < n && p[1] + A[j] < n 
-                        && main_color.Contains(Lb[(p[0] + A[i]) * n + (p[1] + A[j])].BackColor) && Convert.ToInt32(Lb[(p[0] + A[i]) * n + (p[1] + A[j])].Text) <= min)
+                        && main_color.Contains(Lb[(p[0] + A[i]) * n + (p[1] + A[j])].BackColor) 
+                        && Lb_step[(p[0] + A[i]) * n + (p[1] + A[j])] <= min)
                     {
-                        min = Convert.ToInt32(Lb[(p[0] + A[i]) * n + (p[1] + A[j])].Text); np[0] = p[0] + A[i]; np[1] = p[1] + A[j];
+                        np[0] = p[0] + A[i]; np[1] = p[1] + A[j]; 
+                        min = Lb_step[np[0] * n + np[1]];
                     }
                     if (p[0] + A[j] >= 0 && p[1] + A[i] >= 0 && p[0] + A[j] < n && p[1] + A[i] < n 
-                        && main_color.Contains(Lb[(p[0] + A[j]) * n + (p[1] + A[i])].BackColor) && Convert.ToInt32(Lb[(p[0] + A[j]) * n + (p[1] + A[i])].Text) <= min)
+                        && main_color.Contains(Lb[(p[0] + A[j]) * n + (p[1] + A[i])].BackColor) 
+                        && Lb_step[(p[0] + A[j]) * n + (p[1] + A[i])] <= min)
                     {
-                        min = Convert.ToInt32(Lb[(p[0] + A[j]) * n + (p[1] + A[i])].Text); np[1] = p[1] + A[i]; np[0] = p[0] + A[j];
+                        np[0] = p[0] + A[j]; np[1] = p[1] + A[i];
+                        min = Lb_step[np[0] * n + np[1]];
                     }
                 }
             lp[0] = p[0]; lp[1] = p[1];
