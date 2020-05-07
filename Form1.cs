@@ -27,7 +27,9 @@ namespace Chess
         public Form1(int N, int[] P)
         {
             InitializeComponent();
+            if (N < 5) N = 8;
             n = N;
+            if (P.Length != 2 || P[0] < 0 || P[1] < 0 || P[0] >= N || P[1] >= N) P = new int[2] { 0, 0 };
             p = new int[2] { P[0], P[1] };
             Lb = new Label[n * n]; 
             Lb_step = new int[n * n];
